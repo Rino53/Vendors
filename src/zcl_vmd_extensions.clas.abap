@@ -53,9 +53,15 @@ ENDCLASS.
 
 
 
-CLASS zcl_vmd_extensions IMPLEMENTATION.
+CLASS ZCL_VMD_EXTENSIONS IMPLEMENTATION.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Private Method ZCL_VMD_EXTENSIONS=>GET_CLASS_DESCRIPTION
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_CLASS_NAME                   TYPE        STRING
+* | [<-()] R_CLASS_DESCR                  TYPE REF TO CL_ABAP_TYPEDESCR
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD get_class_description.
     CHECK i_class_name IS NOT INITIAL.
     "global class
@@ -66,7 +72,8 @@ CLASS zcl_vmd_extensions IMPLEMENTATION.
       RETURN.
     ELSE.
       "local class
-      DATA(local_class_name) = |\\PROGRAM={ sy-cprog }\\CLASS={ i_class_name }|.
+      DATA: local_class_name TYPE string.
+      local_class_name = |\\PROGRAM={ sy-cprog }\\CLASS={ i_class_name }|.
       cl_abap_classdescr=>describe_by_name( EXPORTING p_name = to_upper( local_class_name )
                                             RECEIVING p_descr_ref = r_class_descr
                                                     EXCEPTIONS type_not_found = 1 ).
@@ -77,19 +84,38 @@ CLASS zcl_vmd_extensions IMPLEMENTATION.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Public Method ZCL_VMD_EXTENSIONS=>GET_EXTENSIONS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] ID                             TYPE        GUID_32
+* | [<-()] EXTENSIONS                     TYPE        TT_EXTENSION_CLASSES
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD get_extensions.
-    ASSIGN extension_objects[ id = id ] TO FIELD-SYMBOL(<ext>).
+    FIELD-SYMBOLS: <ext> LIKE LINE OF extension_objects.
+    READ TABLE extension_objects ASSIGNING <ext> WITH KEY id = id.
+*    ASSIGN extension_objects[ id = id ] TO FIELD-SYMBOL(<ext>).
     IF <ext> IS ASSIGNED.
       extensions = <ext>-extensions.
     ENDIF.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Public Method ZCL_VMD_EXTENSIONS=>GET_EXTENSION_BY_TYPE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] ID                             TYPE        GUID_32
+* | [--->] TYPE                           TYPE        STRING
+* | [<-()] EXTENSION_CLASS_NAME           TYPE        STRING
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD get_extension_by_type.
     CHECK id IS NOT INITIAL.
-    ASSIGN extension_objects[ id = id ] TO FIELD-SYMBOL(<ext>).
+    FIELD-SYMBOLS: <ext> LIKE LINE OF extension_objects.
+    READ TABLE extension_objects ASSIGNING <ext> WITH KEY id = id.
+*    ASSIGN extension_objects[ id = id ] TO FIELD-SYMBOL(<ext>).
     IF <ext> IS ASSIGNED.
-      ASSIGN <ext>-extensions[ type = type ] TO FIELD-SYMBOL(<ext_class>).
+      FIELD-SYMBOLS: <ext_class> LIKE LINE OF <ext>-extensions.
+      READ TABLE <ext>-extensions ASSIGNING <ext_class> WITH KEY type = type.
+*      ASSIGN <ext>-extensions[ type = type ] TO FIELD-SYMBOL(<ext_class>).
       IF <ext_class> IS ASSIGNED.
         extension_class_name = <ext_class>-name.
       ENDIF.
@@ -97,8 +123,17 @@ CLASS zcl_vmd_extensions IMPLEMENTATION.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Public Method ZCL_VMD_EXTENSIONS=>GET_EXTENSION_CLASS_ABS_NAME
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] ID                             TYPE        GUID_32
+* | [--->] TYPE                           TYPE        STRING
+* | [<-()] SUBCLASS_ABS_NAME              TYPE        ABAP_ABSTYPENAME
+* | [!CX!] ZCX_VMD_NO_EXTENSION
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD get_extension_class_abs_name.
-    DATA(subclass_description) = get_class_description( get_extension_by_type( id = id type = type ) ).
+    DATA: subclass_description TYPE REF TO CL_ABAP_TYPEDESCR.
+    subclass_description = get_class_description( get_extension_by_type( id = id type = type ) ).
     IF subclass_description IS INITIAL.
       RAISE EXCEPTION TYPE zcx_vmd_no_extension.
     ENDIF.
@@ -106,10 +141,20 @@ CLASS zcl_vmd_extensions IMPLEMENTATION.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Public Method ZCL_VMD_EXTENSIONS=>SET_EXTENSIONS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] EXTENSIONS                     TYPE        TT_EXTENSION_CLASSES
+* | [<-()] EXTENSION_ID                   TYPE        GUID_32
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_extensions.
+    DATA: ls_extension_objects LIKE LINE OF extension_objects.
     cl_reca_guid=>guid_create(
       IMPORTING
         ed_guid_32 = extension_id ).
-    INSERT VALUE #( id = extension_id extensions = extensions ) INTO TABLE extension_objects.
+    ls_extension_objects-id         = extension_id.
+    ls_extension_objects-extensions = extensions.
+    INSERT ls_extension_objects INTO TABLE extension_objects.
+*    INSERT VALUE #( id = extension_id extensions = extensions ) INTO TABLE extension_objects.
   ENDMETHOD.
 ENDCLASS.
