@@ -1,4 +1,3 @@
-"! <p class="shorttext synchronized" lang="en">Vendor Central Data Object</p>
 CLASS zcl_vmd_central DEFINITION
   PUBLIC
   CREATE PROTECTED .
