@@ -135,14 +135,11 @@ CLASS zcl_vmd_company DEFINITION
     "! <p class="shorttext synchronized" lang="en">Assignment Test Group</p>
     METHODS set_assign_test IMPORTING  VALUE(i_assign_test) TYPE wrf_mrm_assign_group RETURNING VALUE(r_company) TYPE REF TO zcl_vmd_company .
     "! <p class="shorttext synchronized" lang="en">Business Purpose Completed Flag</p>
-    METHODS set_cvp_xblck_b IMPORTING  VALUE(i_cvp_xblck_b) TYPE cvp_xblck RETURNING VALUE(r_company) TYPE REF TO zcl_vmd_company .
+*    METHODS set_cvp_xblck_b IMPORTING  VALUE(i_cvp_xblck_b) TYPE cvp_xblck RETURNING VALUE(r_company) TYPE REF TO zcl_vmd_company .
     "! <p class="shorttext synchronized" lang="en">Main economic activity</p>
-    METHODS set_ciiucode IMPORTING  VALUE(i_ciiucode) TYPE ciiucode RETURNING VALUE(r_company) TYPE REF TO zcl_vmd_company .
+*    METHODS set_ciiucode IMPORTING  VALUE(i_ciiucode) TYPE ciiucode RETURNING VALUE(r_company) TYPE REF TO zcl_vmd_company .
     "! <p class="shorttext synchronized" lang="en">Indicator: Alternative payee using account number</p>
-    METHODS set_xlfzb IMPORTING  VALUE(i_xlfzb) TYPE xlfzb RETURNING VALUE(r_company) TYPE REF TO zcl_vmd_company .
-
-
-
+*    METHODS set_xlfzb IMPORTING  VALUE(i_xlfzb) TYPE xlfzb RETURNING VALUE(r_company) TYPE REF TO zcl_vmd_company .
   PROTECTED SECTION.
     DATA: ref_data TYPE REF TO vmds_ei_company.
     METHODS: constructor IMPORTING i_extension_id TYPE guid_32 OPTIONAL.
@@ -153,103 +150,566 @@ ENDCLASS.
 
 
 
-CLASS zcl_vmd_company IMPLEMENTATION.
+CLASS ZCL_VMD_COMPANY IMPLEMENTATION.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Protected Method ZCL_VMD_COMPANY->CONSTRUCTOR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_EXTENSION_ID                 TYPE        GUID_32(optional)
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD constructor.
     extension_id = i_extension_id.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Public Method ZCL_VMD_COMPANY=>CREATE_INSTANCE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_EXTENSION_ID                 TYPE        GUID_32
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD create_instance.
     IF i_extension_id IS INITIAL.
-      r_company = NEW #(  ).
+      create object r_company.
+*      r_company = NEW #(  ).
     ELSE.
       DATA: subclass TYPE REF TO object.
       TRY.
-          DATA(sublcass_abs_name) = zcl_vmd_extensions=>get_extension_class_abs_name( id = i_extension_id type = zcl_vmd_extensions=>class_extension-company ).
+          DATA: sublcass_abs_name TYPE ABAP_ABSTYPENAME.
+          sublcass_abs_name = zcl_vmd_extensions=>get_extension_class_abs_name( id = i_extension_id type = zcl_vmd_extensions=>class_extension-company ).
           CREATE OBJECT subclass TYPE (sublcass_abs_name)
            EXPORTING
             i_extension_id  = i_extension_id.
           r_company ?= subclass.
         CATCH zcx_vmd_no_extension.
-          r_company = NEW #(  ).
+          create object r_company.
+*          r_company = NEW #(  ).
       ENDTRY.
     ENDIF.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->GET_DATA
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] R_COMPANY                      TYPE REF TO VMDS_EI_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD get_data.
     r_company = ref_data.
   ENDMETHOD.
 
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_AKONT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_AKONT                        TYPE        AKONT
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_akont.    ref_data->data-akont = i_akont. ref_data->datax-akont = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ALTKN
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ALTKN                        TYPE        ALTKN
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_altkn.    ref_data->data-altkn = i_altkn. ref_data->datax-altkn = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ASSIGN_TEST
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ASSIGN_TEST                  TYPE        WRF_MRM_ASSIGN_GROUP
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_assign_test.    ref_data->data-assign_test = i_assign_test. ref_data->datax-assign_test = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_BEGRU
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_BEGRU                        TYPE        BRGRU
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_begru.    ref_data->data-begru = i_begru. ref_data->datax-begru = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_BLNKZ
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_BLNKZ                        TYPE        BLNKZ
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_blnkz.    ref_data->data-blnkz = i_blnkz. ref_data->datax-blnkz = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_BUSAB
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_BUSAB                        TYPE        BUSAB
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_busab.    ref_data->data-busab = i_busab. ref_data->datax-busab = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_CERDT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_CERDT                        TYPE        CERDT
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_cerdt.    ref_data->data-cerdt = i_cerdt. ref_data->datax-cerdt = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_DATA
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_COMPANY                      TYPE REF TO VMDS_EI_COMPANY
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_data.
+    DATA: lr_texts TYPE REF TO cvis_ei_cvis_text.
+    GET REFERENCE OF ref_data->texts INTO lr_texts.
+
     ref_data = i_company.
-    texts ?= zcl_vmd_texts=>create_instance( i_extension_id = extension_id i_texts = REF #( ref_data->texts ) ).
+    texts ?= zcl_vmd_texts=>create_instance( i_extension_id = extension_id i_texts = lr_texts ). "REF #( ref_data->texts ) ).
     r_company = me.
   ENDMETHOD.
 
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_DATLZ
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_DATLZ                        TYPE        DATLZ
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_datlz.    ref_data->data-datlz = i_datlz. ref_data->datax-datlz = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_EIKTO
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_EIKTO                        TYPE        EIKTO_K
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_eikto.    ref_data->data-eikto = i_eikto. ref_data->datax-eikto = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_FDGRV
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_FDGRV                        TYPE        FDGRV
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_fdgrv.    ref_data->data-fdgrv = i_fdgrv. ref_data->datax-fdgrv = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_FRGRP
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_FRGRP                        TYPE        FRGRP
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_frgrp.    ref_data->data-frgrp = i_frgrp. ref_data->datax-frgrp = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_GRICD
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_GRICD                        TYPE        J_1AGICD_D
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_gricd.    ref_data->data-gricd = i_gricd. ref_data->datax-gricd = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_GRIDT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_GRIDT                        TYPE        J_1ADTYP_D
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_gridt.    ref_data->data-gridt = i_gridt. ref_data->datax-gridt = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_GUZTE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_GUZTE                        TYPE        GUZTE
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_guzte.    ref_data->data-guzte = i_guzte. ref_data->datax-guzte = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_HBKID
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_HBKID                        TYPE        HBKID
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_hbkid.    ref_data->data-hbkid = i_hbkid. ref_data->datax-hbkid = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_INTAD
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_INTAD                        TYPE        INTAD
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_intad.    ref_data->data-intad = i_intad. ref_data->datax-intad = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_KULTG
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_KULTG                        TYPE        KULTG
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_kultg.    ref_data->data-kultg = i_kultg. ref_data->datax-kultg = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_KVERM
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_KVERM                        TYPE        KVERM
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_kverm.    ref_data->data-kverm = i_kverm. ref_data->datax-kverm = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_LNRZB
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LNRZB                        TYPE        LNRZB
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_lnrzb.    ref_data->data-lnrzb = i_lnrzb. ref_data->datax-lnrzb = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_LNRZE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LNRZE                        TYPE        LNRZE
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_lnrze.    ref_data->data-lnrze = i_lnrze. ref_data->datax-lnrze = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_LOEVM
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LOEVM                        TYPE        LOEVM_B
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_loevm.    ref_data->data-loevm = i_loevm. ref_data->datax-loevm = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_MGRUP
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_MGRUP                        TYPE        MGRUP
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_mgrup.    ref_data->data-mgrup = i_mgrup. ref_data->datax-mgrup = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_MINDK
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_MINDK                        TYPE        MINDK
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_mindk.    ref_data->data-mindk = i_mindk. ref_data->datax-mindk = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_NODEL
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_NODEL                        TYPE        NODEL_B
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_nodel.    ref_data->data-nodel = i_nodel. ref_data->datax-nodel = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_PERNR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_PERNR                        TYPE        PERNR_D
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_pernr.    ref_data->data-pernr = i_pernr. ref_data->datax-pernr = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_PREPAY_RELEVANT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_PREPAY_RELEVANT              TYPE        WRF_PREPAY_RELEVANT
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_prepay_relevant.    ref_data->data-prepay_relevant = i_prepay_relevant. ref_data->datax-prepay_relevant = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_QLAND
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_QLAND                        TYPE        QLAND
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_qland.    ref_data->data-qland = i_qland. ref_data->datax-qland = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_QSBGR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_QSBGR                        TYPE        QSBGR
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_qsbgr.    ref_data->data-qsbgr = i_qsbgr. ref_data->datax-qsbgr = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_QSREC
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_QSREC                        TYPE        QSREC
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_qsrec.    ref_data->data-qsrec = i_qsrec. ref_data->datax-qsrec = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_QSSKZ
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_QSSKZ                        TYPE        QSSKZ
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_qsskz.    ref_data->data-qsskz = i_qsskz. ref_data->datax-qsskz = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_QSZDT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_QSZDT                        TYPE        QSZDT
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_qszdt.    ref_data->data-qszdt = i_qszdt. ref_data->datax-qszdt = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_QSZNR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_QSZNR                        TYPE        QSZNR
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_qsznr.    ref_data->data-qsznr = i_qsznr. ref_data->datax-qsznr = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_REPRF
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_REPRF                        TYPE        REPRF
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_reprf.    ref_data->data-reprf = i_reprf. ref_data->datax-reprf = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_SPERR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_SPERR                        TYPE        SPERB_B
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_sperr.    ref_data->data-sperr = i_sperr. ref_data->datax-sperr = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_TASK
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_TASK                         TYPE        ZCL_VMD_UTIL=>T_MODE
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_task.
     ref_data->task = i_task.
     r_company = me.
   ENDMETHOD.
 
-  METHOD set_sperr.    ref_data->data-sperr = i_sperr. ref_data->datax-sperr = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_loevm.    ref_data->data-loevm = i_loevm. ref_data->datax-loevm = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_zuawa.    ref_data->data-zuawa = i_zuawa. ref_data->datax-zuawa = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_akont.    ref_data->data-akont = i_akont. ref_data->datax-akont = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_begru.    ref_data->data-begru = i_begru. ref_data->datax-begru = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_vzskz.    ref_data->data-vzskz = i_vzskz. ref_data->datax-vzskz = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_zwels.    ref_data->data-zwels = i_zwels. ref_data->datax-zwels = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_xverr.    ref_data->data-xverr = i_xverr. ref_data->datax-xverr = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_zahls.    ref_data->data-zahls = i_zahls. ref_data->datax-zahls = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_zterm.    ref_data->data-zterm = i_zterm. ref_data->datax-zterm = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_eikto.    ref_data->data-eikto = i_eikto. ref_data->datax-eikto = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_zsabe.    ref_data->data-zsabe = i_zsabe. ref_data->datax-zsabe = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_kverm.    ref_data->data-kverm = i_kverm. ref_data->datax-kverm = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_fdgrv.    ref_data->data-fdgrv = i_fdgrv. ref_data->datax-fdgrv = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_busab.    ref_data->data-busab = i_busab. ref_data->datax-busab = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_lnrze.    ref_data->data-lnrze = i_lnrze. ref_data->datax-lnrze = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_lnrzb.    ref_data->data-lnrzb = i_lnrzb. ref_data->datax-lnrzb = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_zindt.    ref_data->data-zindt = i_zindt. ref_data->datax-zindt = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_zinrt.    ref_data->data-zinrt = i_zinrt. ref_data->datax-zinrt = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_datlz.    ref_data->data-datlz = i_datlz. ref_data->datax-datlz = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_xdezv.    ref_data->data-xdezv = i_xdezv. ref_data->datax-xdezv = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_webtr.    ref_data->data-webtr = i_webtr. ref_data->datax-webtr = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_kultg.    ref_data->data-kultg = i_kultg. ref_data->datax-kultg = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_reprf.    ref_data->data-reprf = i_reprf. ref_data->datax-reprf = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_togru.    ref_data->data-togru = i_togru. ref_data->datax-togru = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_hbkid.    ref_data->data-hbkid = i_hbkid. ref_data->datax-hbkid = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_xpore.    ref_data->data-xpore = i_xpore. ref_data->datax-xpore = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_qsznr.    ref_data->data-qsznr = i_qsznr. ref_data->datax-qsznr = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_qszdt.    ref_data->data-qszdt = i_qszdt. ref_data->datax-qszdt = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_qsskz.    ref_data->data-qsskz = i_qsskz. ref_data->datax-qsskz = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_blnkz.    ref_data->data-blnkz = i_blnkz. ref_data->datax-blnkz = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_mindk.    ref_data->data-mindk = i_mindk. ref_data->datax-mindk = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_altkn.    ref_data->data-altkn = i_altkn. ref_data->datax-altkn = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_zgrup.    ref_data->data-zgrup = i_zgrup. ref_data->datax-zgrup = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_mgrup.    ref_data->data-mgrup = i_mgrup. ref_data->datax-mgrup = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_uzawe.    ref_data->data-uzawe = i_uzawe. ref_data->datax-uzawe = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_qsrec.    ref_data->data-qsrec = i_qsrec. ref_data->datax-qsrec = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_qsbgr.    ref_data->data-qsbgr = i_qsbgr. ref_data->datax-qsbgr = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_qland.    ref_data->data-qland = i_qland. ref_data->datax-qland = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_xedip.    ref_data->data-xedip = i_xedip. ref_data->datax-xedip = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_frgrp.    ref_data->data-frgrp = i_frgrp. ref_data->datax-frgrp = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_tlfxs.    ref_data->data-tlfxs = i_tlfxs. ref_data->datax-tlfxs = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_intad.    ref_data->data-intad = i_intad. ref_data->datax-intad = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_guzte.    ref_data->data-guzte = i_guzte. ref_data->datax-guzte = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_gricd.    ref_data->data-gricd = i_gricd. ref_data->datax-gricd = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_gridt.    ref_data->data-gridt = i_gridt. ref_data->datax-gridt = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_xausz.    ref_data->data-xausz = i_xausz. ref_data->datax-xausz = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_cerdt.    ref_data->data-cerdt = i_cerdt. ref_data->datax-cerdt = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_togrr.    ref_data->data-togrr = i_togrr. ref_data->datax-togrr = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_pernr.    ref_data->data-pernr = i_pernr. ref_data->datax-pernr = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_nodel.    ref_data->data-nodel = i_nodel. ref_data->datax-nodel = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_tlfns.    ref_data->data-tlfns = i_tlfns. ref_data->datax-tlfns = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_prepay_relevant.    ref_data->data-prepay_relevant = i_prepay_relevant. ref_data->datax-prepay_relevant = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_assign_test.    ref_data->data-assign_test = i_assign_test. ref_data->datax-assign_test = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_cvp_xblck_b.    ref_data->data-cvp_xblck_b = i_cvp_xblck_b. ref_data->datax-cvp_xblck_b = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_ciiucode.    ref_data->data-ciiucode = i_ciiucode. ref_data->datax-ciiucode = abap_true . r_company = me. ENDMETHOD.
-  METHOD set_xlfzb.    ref_data->data-xlfzb = i_xlfzb. ref_data->datax-xlfzb = abap_true . r_company = me. ENDMETHOD.
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_TLFNS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_TLFNS                        TYPE        TLFNS
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_tlfns.    ref_data->data-tlfns = i_tlfns. ref_data->datax-tlfns = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_TLFXS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_TLFXS                        TYPE        TLFXS
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_tlfxs.    ref_data->data-tlfxs = i_tlfxs. ref_data->datax-tlfxs = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_TOGRR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_TOGRR                        TYPE        TOGRR
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_togrr.    ref_data->data-togrr = i_togrr. ref_data->datax-togrr = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_TOGRU
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_TOGRU                        TYPE        TOGRU
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_togru.    ref_data->data-togru = i_togru. ref_data->datax-togru = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_UZAWE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_UZAWE                        TYPE        UZAWE
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_uzawe.    ref_data->data-uzawe = i_uzawe. ref_data->datax-uzawe = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_VZSKZ
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_VZSKZ                        TYPE        VZSKZ
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_vzskz.    ref_data->data-vzskz = i_vzskz. ref_data->datax-vzskz = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_WEBTR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_WEBTR                        TYPE        WEBTR
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_webtr.    ref_data->data-webtr = i_webtr. ref_data->datax-webtr = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_XAUSZ
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_XAUSZ                        TYPE        XAUSZ
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_xausz.    ref_data->data-xausz = i_xausz. ref_data->datax-xausz = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_XDEZV
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_XDEZV                        TYPE        XDEZV
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_xdezv.    ref_data->data-xdezv = i_xdezv. ref_data->datax-xdezv = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_XEDIP
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_XEDIP                        TYPE        XEDIP
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_xedip.    ref_data->data-xedip = i_xedip. ref_data->datax-xedip = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_XPORE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_XPORE                        TYPE        XPORE
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_xpore.    ref_data->data-xpore = i_xpore. ref_data->datax-xpore = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_XVERR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_XVERR                        TYPE        XVERR_LFB1
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_xverr.    ref_data->data-xverr = i_xverr. ref_data->datax-xverr = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ZAHLS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZAHLS                        TYPE        DZAHLS
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_zahls.    ref_data->data-zahls = i_zahls. ref_data->datax-zahls = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ZGRUP
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZGRUP                        TYPE        DZGRUP
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_zgrup.    ref_data->data-zgrup = i_zgrup. ref_data->datax-zgrup = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ZINDT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZINDT                        TYPE        DZINDT
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_zindt.    ref_data->data-zindt = i_zindt. ref_data->datax-zindt = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ZINRT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZINRT                        TYPE        DZINRT
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_zinrt.    ref_data->data-zinrt = i_zinrt. ref_data->datax-zinrt = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ZSABE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZSABE                        TYPE        DZSABE_K
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_zsabe.    ref_data->data-zsabe = i_zsabe. ref_data->datax-zsabe = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ZTERM
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZTERM                        TYPE        DZTERM
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_zterm.    ref_data->data-zterm = i_zterm. ref_data->datax-zterm = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ZUAWA
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZUAWA                        TYPE        DZUAWA
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_zuawa.    ref_data->data-zuawa = i_zuawa. ref_data->datax-zuawa = abap_true . r_company = me. ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_COMPANY->SET_ZWELS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZWELS                        TYPE        DZWELS
+* | [<-()] R_COMPANY                      TYPE REF TO ZCL_VMD_COMPANY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD set_zwels.    ref_data->data-zwels = i_zwels. ref_data->datax-zwels = abap_true . r_company = me. ENDMETHOD.
 ENDCLASS.
