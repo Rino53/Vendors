@@ -170,13 +170,13 @@ CLASS zcl_vmd_purchasing DEFINITION
         VALUE(i_lebre) TYPE lebre . "Indicator for Service-Based Invoice Verification
     METHODS set_incov
       IMPORTING
-        VALUE(i_incov) TYPE incov . "Incoterms Version
+        VALUE(i_incov) TYPE char1. "incov . "Incoterms Version
     METHODS set_inco2_l
       IMPORTING
-        VALUE(i_inco2_l) TYPE inco2_l . "Incoterms Location 1
+        VALUE(i_inco2_l) TYPE char1. " inco2_l . "Incoterms Location 1
     METHODS set_inco3_l
       IMPORTING
-        VALUE(i_inco3_l) TYPE inco3_l . "Incoterms Location 2
+        VALUE(i_inco3_l) TYPE char1. " inco3_l . "Incoterms Location 2
 ***
   PROTECTED SECTION.
     DATA: ref_data TYPE REF TO vmds_ei_purchasing.
@@ -188,24 +188,44 @@ ENDCLASS.
 
 
 
-CLASS zcl_vmd_purchasing IMPLEMENTATION.
+CLASS ZCL_VMD_PURCHASING IMPLEMENTATION.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->ADD_PARTNER_FUNCTION
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_FUNCTION                     TYPE        PARVW
+* | [--->] I_PARTNER                      TYPE        GPANR
+* | [--->] I_LTSNR                        TYPE        LTSNR
+* | [--->] I_WERKS                        TYPE        WERKS_D
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD add_partner_function.
-    ASSIGN ref_data->functions-functions[ data_key-parvw = i_function
+    FIELD-SYMBOLS: <par> LIKE LINE OF ref_data->functions-functions.
+    READ TABLE ref_data->functions-functions WITH KEY data_key-parvw = i_function
                                           data_key-ltsnr = i_ltsnr "Vendor Subrange
                                           data_key-werks = i_werks
-                                          data-partner   = i_partner
-                                           ] TO FIELD-SYMBOL(<par>).
+                                          data-partner   = i_partner ASSIGNING <par>.
+*    ASSIGN ref_data->functions-functions[ data_key-parvw = i_function
+*                                          data_key-ltsnr = i_ltsnr "Vendor Subrange
+*                                          data_key-werks = i_werks
+*                                          data-partner   = i_partner
+*                                           ] TO FIELD-SYMBOL(<par>).
     IF sy-subrc NE 0.
-      INSERT VALUE #(  data_key-parvw = i_function
-                       data_key-ltsnr = i_ltsnr "Vendor Subrange
-                       data_key-werks = i_werks
-                       data-partner = i_partner
-                       task = zcl_vmd_util=>mode-create
-                       ) INTO TABLE ref_data->functions-functions ASSIGNING <par>.
+      APPEND INITIAL LINE TO ref_data->functions-functions ASSIGNING <par>.
+      <par>-data_key-parvw = i_function.
+      <par>-data_key-ltsnr = i_ltsnr. "Vendor Subrange
+      <par>-data_key-werks = i_werks.
+      <par>-data-partner = i_partner.
+      <par>-task = zcl_vmd_util=>mode-create.
+*      INSERT VALUE #(  data_key-parvw = i_function
+*                       data_key-ltsnr = i_ltsnr "Vendor Subrange
+*                       data_key-werks = i_werks
+*                       data-partner = i_partner
+*                       task = zcl_vmd_util=>mode-create
+*                       ) INTO TABLE ref_data->functions-functions ASSIGNING <par>.
       IF sy-subrc EQ 0.
-        LOOP AT ref_data->functions-functions ASSIGNING FIELD-SYMBOL(<epar>)
+        FIELD-SYMBOLS: <epar> LIKE LINE OF ref_data->functions-functions.
+        LOOP AT ref_data->functions-functions ASSIGNING <epar>
           WHERE data_key-parvw EQ i_function.
           IF <epar>-data_key-parza GT <par>-data_key-parza.
             <par>-data_key-parza = <epar>-data_key-parza.
@@ -224,12 +244,29 @@ CLASS zcl_vmd_purchasing IMPLEMENTATION.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->CHANGE_PARTNER_FUNCTION
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_FUNCTION                     TYPE        PARVW
+* | [--->] I_PARTNER_OLD                  TYPE        GPANR
+* | [--->] I_PARTNER                      TYPE        GPANR
+* | [--->] I_LTSNR_OLD                    TYPE        LTSNR
+* | [--->] I_LTSNR                        TYPE        LTSNR
+* | [--->] I_WERKS_OLD                    TYPE        WERKS_D
+* | [--->] I_WERKS                        TYPE        WERKS_D
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD change_partner_function.
-    ASSIGN ref_data->functions-functions[ data_key-parvw = i_function
-                                          data_key-ltsnr = i_ltsnr_old "Vendor Subrange
-                                          data_key-werks = i_werks_old
-                                          data-partner   = i_partner_old
-                                           ] TO FIELD-SYMBOL(<par>).
+    FIELD-SYMBOLS: <par> LIKE LINE OF ref_data->functions-functions.
+    READ TABLE ref_data->functions-functions WITH KEY data_key-parvw = i_function
+                                                      data_key-ltsnr = i_ltsnr_old "Vendor Subrange
+                                                      data_key-werks = i_werks_old
+                                                      data-partner   = i_partner_old ASSIGNING <par>.
+
+*    ASSIGN ref_data->functions-functions[ data_key-parvw = i_function
+*                                          data_key-ltsnr = i_ltsnr_old "Vendor Subrange
+*                                          data_key-werks = i_werks_old
+*                                          data-partner   = i_partner_old
+*                                           ] TO FIELD-SYMBOL(<par>).
     IF sy-subrc EQ 0.
       <par>-task = zcl_vmd_util=>mode-change.
       <par>-data-partner = i_partner.
@@ -245,32 +282,55 @@ CLASS zcl_vmd_purchasing IMPLEMENTATION.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Protected Method ZCL_VMD_PURCHASING->CONTRUCTOR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_EXTENSION_ID                 TYPE        GUID_32(optional)
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD contructor.
     extension_id = i_extension_id.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Public Method ZCL_VMD_PURCHASING=>CREATE_INSTANCE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_EXTENSION_ID                 TYPE        GUID_32
+* | [<-()] R_PURCHASING                   TYPE REF TO ZCL_VMD_PURCHASING
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD create_instance.
     IF i_extension_id IS INITIAL.
-      r_purchasing = NEW #( ).
+      CREATE OBJECT r_purchasing.
+*      r_purchasing = NEW #( ).
     ELSE.
       DATA: subclass TYPE REF TO object.
       TRY.
-          DATA(sublcass_abs_name) = zcl_vmd_extensions=>get_extension_class_abs_name( id = i_extension_id type = zcl_vmd_extensions=>class_extension-purchase ).
+          DATA: sublcass_abs_name TYPE ABAP_ABSTYPENAME.
+          sublcass_abs_name = zcl_vmd_extensions=>get_extension_class_abs_name( id = i_extension_id type = zcl_vmd_extensions=>class_extension-purchase ).
           CREATE OBJECT subclass TYPE (sublcass_abs_name).
           r_purchasing ?= subclass.
         CATCH zcx_vmd_no_extension.
-          r_purchasing = NEW #( ).
+          CREATE OBJECT r_purchasing.
+*          r_purchasing = NEW #( ).
       ENDTRY.
     ENDIF.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->DELETE_PARTNER_FUNCTION
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_FUNCTION                     TYPE        PARVW
+* | [--->] I_PARTNER                      TYPE        GPANR(optional)
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD delete_partner_function.
+    FIELD-SYMBOLS: <par> LIKE LINE OF ref_data->functions-functions.
     IF i_partner IS NOT INITIAL.
-      ASSIGN ref_data->functions-functions[ data_key-parvw = i_function
-                                            data-partner   = i_partner
-                                             ] TO FIELD-SYMBOL(<par>).
+      READ TABLE ref_data->functions-functions WITH KEY data_key-parvw = i_function
+                                                        data-partner   = i_partner ASSIGNING <par>.
+*      ASSIGN ref_data->functions-functions[ data_key-parvw = i_function
+*                                            data-partner   = i_partner
+*                                             ] TO FIELD-SYMBOL(<par>).
       IF sy-subrc EQ 0.
         <par>-task = zcl_vmd_util=>mode-delete.
         IF ref_data->task NE zcl_vmd_util=>mode-create AND
@@ -294,247 +354,494 @@ CLASS zcl_vmd_purchasing IMPLEMENTATION.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_AGREL
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_AGREL                        TYPE        AGREL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_agrel.
     ref_data->data-agrel = i_agrel. ref_data->datax-agrel = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_BLIND
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_BLIND                        TYPE        BLIND
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_blind.
     ref_data->data-blind = i_blind. ref_data->datax-blind = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_BOIND
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_BOIND                        TYPE        BOIND
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_boind.
     ref_data->data-boind = i_boind. ref_data->datax-boind = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_BOLRE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_BOLRE                        TYPE        BOLRE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_bolre.
     ref_data->data-bolre = i_bolre. ref_data->datax-bolre = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_BOPNR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_BOPNR                        TYPE        BOPNR
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_bopnr.
     ref_data->data-bopnr = i_bopnr. ref_data->datax-bopnr = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_BSTAE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_BSTAE                        TYPE        BSTAE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_bstae.
     ref_data->data-bstae = i_bstae. ref_data->datax-bstae = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_DATA
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_DATA                         TYPE REF TO VMDS_EI_PURCHASING
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_data.
+    DATA: lr_texts TYPE REF TO vmds_ei_purchasing-texts.
     ref_data = i_data.
-    texts ?= zcl_vmd_texts=>create_instance( i_extension_id = extension_id i_texts =  REF #( ref_data->texts )  ).
+    GET REFERENCE OF ref_data->texts INTO lr_texts.
+    texts ?= zcl_vmd_texts=>create_instance( i_extension_id = extension_id i_texts = lr_texts ). "REF #( ref_data->texts )  ).
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_EIKTO
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_EIKTO                        TYPE        EIKTO_M
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_eikto.
     ref_data->data-eikto = i_eikto. ref_data->datax-eikto = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_EKGRP
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_EKGRP                        TYPE        EKGRP
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_ekgrp.
     ref_data->data-ekgrp = i_ekgrp. ref_data->datax-ekgrp = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_EXPVZ
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_EXPVZ                        TYPE        EXPVZ
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_expvz.
     ref_data->data-expvz = i_expvz. ref_data->datax-expvz = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_INCO1
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_INCO1                        TYPE        INCO1
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_inco1.
     ref_data->data-inco1 = i_inco1. ref_data->datax-inco1 = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_INCO2
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_INCO2                        TYPE        INCO2
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_inco2.
     ref_data->data-inco2 = i_inco2. ref_data->datax-inco2 = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_INCO2_L
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_INCO2_L                      TYPE        CHAR1
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_inco2_l.
-    ref_data->data-inco2_l = i_inco2_l. ref_data->datax-inco2_l = abap_true .
+*    ref_data->data-inco2_l = i_inco2_l. ref_data->datax-inco2_l = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_INCO3_L
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_INCO3_L                      TYPE        CHAR1
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_inco3_l.
-    ref_data->data-inco3_l = i_inco3_l. ref_data->datax-inco3_l = abap_true .
+*    ref_data->data-inco3_l = i_inco3_l. ref_data->datax-inco3_l = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_INCOV
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_INCOV                        TYPE        CHAR1
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_incov.
-    ref_data->data-incov = i_incov. ref_data->datax-incov = abap_true .
+*    ref_data->data-incov = i_incov. ref_data->datax-incov = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_KALSK
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_KALSK                        TYPE        KALSK
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_kalsk.
     ref_data->data-kalsk = i_kalsk. ref_data->datax-kalsk = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_KZABS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_KZABS                        TYPE        KZABS
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_kzabs.
     ref_data->data-kzabs = i_kzabs. ref_data->datax-kzabs = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_KZAUT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_KZAUT                        TYPE        KZAUT
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_kzaut.
     ref_data->data-kzaut = i_kzaut. ref_data->datax-kzaut = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_LEBRE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LEBRE                        TYPE        LEBRE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_lebre.
     ref_data->data-lebre = i_lebre. ref_data->datax-lebre = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_LFABC
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LFABC                        TYPE        LFABC
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_lfabc.
     ref_data->data-lfabc = i_lfabc. ref_data->datax-lfabc = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_LFRHY
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LFRHY                        TYPE        LFRHY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_lfrhy.
     ref_data->data-lfrhy = i_lfrhy. ref_data->datax-lfrhy = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_LIBES
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LIBES                        TYPE        LIBES
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_libes.
     ref_data->data-libes = i_libes. ref_data->datax-libes = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_LIPRE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LIPRE                        TYPE        LIPRE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_lipre.
     ref_data->data-lipre = i_lipre. ref_data->datax-lipre = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_LISER
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LISER                        TYPE        LISER
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_liser.
     ref_data->data-liser = i_liser. ref_data->datax-liser = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_LOEVM
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_LOEVM                        TYPE        LOEVM_M
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_loevm.
     ref_data->data-loevm = i_loevm. ref_data->datax-loevm = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_MEGRU
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_MEGRU                        TYPE        MEGRU
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_megru.
     ref_data->data-megru = i_megru. ref_data->datax-megru = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_MEPRF
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_MEPRF                        TYPE        MEPRF
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_meprf.
     ref_data->data-meprf = i_meprf. ref_data->datax-meprf = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_MINBW
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_MINBW                        TYPE        MINBW
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_minbw.
     ref_data->data-minbw = i_minbw. ref_data->datax-minbw = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_MRPPP
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_MRPPP                        TYPE        MRPPP_W
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_mrppp.
     ref_data->data-mrppp = i_mrppp. ref_data->datax-mrppp = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_NRGEW
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_NRGEW                        TYPE        NRGEW
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_nrgew.
     ref_data->data-nrgew = i_nrgew. ref_data->datax-nrgew = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_PAPRF
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_PAPRF                        TYPE        WVMI_PAPRF
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_paprf.
     ref_data->data-paprf = i_paprf. ref_data->datax-paprf = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_PLIFZ
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_PLIFZ                        TYPE        PLIFZ
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_plifz.
     ref_data->data-plifz = i_plifz. ref_data->datax-plifz = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_PRFRE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_PRFRE                        TYPE        PRFRE_LH
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_prfre.
     ref_data->data-prfre = i_prfre. ref_data->datax-prfre = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_RDPRF
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_RDPRF                        TYPE        RDPRF
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_rdprf.
     ref_data->data-rdprf = i_rdprf. ref_data->datax-rdprf = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_SKRIT
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_SKRIT                        TYPE        SKRIT
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_skrit.
     ref_data->data-skrit = i_skrit. ref_data->datax-skrit = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_SPERM
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_SPERM                        TYPE        SPERM_M
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_sperm.
     ref_data->data-sperm = i_sperm. ref_data->datax-sperm = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_TASK
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_TASK                         TYPE        ZCL_VMD_UTIL=>T_MODE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_task.
     ref_data->task = i_task.
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_TELF1
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_TELF1                        TYPE        TELFE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_telf1.
     ref_data->data-telf1 = i_telf1. ref_data->datax-telf1 = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_UMSAE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_UMSAE                        TYPE        UMSAE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_umsae.
     ref_data->data-umsae = i_umsae. ref_data->datax-umsae = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_VENSL
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_VENSL                        TYPE        VENSL
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_vensl.
     ref_data->data-vensl = i_vensl. ref_data->datax-vensl = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_VERKF
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_VERKF                        TYPE        EVERK
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_verkf.
     ref_data->data-verkf = i_verkf. ref_data->datax-verkf = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_VSBED
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_VSBED                        TYPE        VSBED
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_vsbed.
     ref_data->data-vsbed = i_vsbed. ref_data->datax-vsbed = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_WAERS
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_WAERS                        TYPE        BSTWA
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_waers.
     ref_data->data-waers = i_waers. ref_data->datax-waers = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_WEBRE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_WEBRE                        TYPE        WEBRE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_webre.
     ref_data->data-webre = i_webre. ref_data->datax-webre = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_XERSR
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_XERSR                        TYPE        XERSR
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_xersr.
     ref_data->data-xersr = i_xersr. ref_data->datax-xersr = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_XERSY
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_XERSY                        TYPE        XERSY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_xersy.
     ref_data->data-xersy = i_xersy. ref_data->datax-xersy = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_XNBWY
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_XNBWY                        TYPE        XNBWY
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_xnbwy.
     ref_data->data-xnbwy = i_xnbwy. ref_data->datax-xnbwy = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_ZOLLA
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZOLLA                        TYPE        DZOLLS
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_zolla.
     ref_data->data-zolla = i_zolla. ref_data->datax-zolla = abap_true .
   ENDMETHOD.
 
 
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_VMD_PURCHASING->SET_ZTERM
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] I_ZTERM                        TYPE        DZTERM
+* +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD set_zterm.
     ref_data->data-zterm = i_zterm. ref_data->datax-zterm = abap_true .
   ENDMETHOD.
